@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+<style>
+    body {
+        background-image: url(/img/signupbackground.jpg);
+        background-repeat: repeat;
+        background-size: cover;
+    }
+
+    div {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 600px;
+        height: 200px;
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+    }
+
+    form{
+        position: fixed;
+        top: 30%;
+        left: 15%;
+        transform: translate(-50%, -50%);
+        font-family: monospace;
+        font-style: normal;
+        font-size: 24px;
+        color: black;
+        width: 300px;
+        height: 50px;
+        text-align: center;
+    }
+
+    input {
+        position: fixed;
+        left: 65%;
+        width: 200px;
+        height: 25px;
+        border: 0px;
+        font-family: monospace;
+        font-style: normal;
+        font-size: 18px;
+        border-style: hidden;
+        background-color: transparent;
+    }
+
+    input:hover {
+        position: fixed;
+        left: 65%;
+        width: 200px;
+        height: 25px;
+        border-style: groove;
+        border-width: 1px;
+        border-radius: 2px;
+        border-color: aquamarine;
+        font-family: monospace;
+        font-style: normal;
+        font-size: 18px;
+        background-color: transparent;
+    }
+
+
+    #bgup {
+        background-color: white;
+        background-position: fixed;
+        border-radius: 10px;
+        left: 9%;
+        top: 3%;
+        width: 450px;
+        height: 150px;
+        opacity: 0.3;
+    }
+
+    #bgdown {
+        background-color: antiquewhite;
+        background-position: fixed;
+        border-radius: 10px;
+        left: 11%;
+        top: 27%;
+        width: 380px;
+        height: 430px;
+        opacity: 0.2;
+    }
+
+
+</style>
+
+
+    <script>
+
+        var xhr = new XMLHttpRequest();
+     function verification(){
+   var un=document.getElementById("un").value;
+         xhr.open("GET","/verify?username="+un,true);
+         xhr.send();
+
+     }
+
+     xhr.onreadystatechange=function(){
+
+         if(xhr.readyState==4 && xhr.status==200){
+             document.getElementById("nameError").innerHTML=xhr.responseText;
+         }
+
+     }
+
+     var veri = new XMLHttpRequest();
+
+     veri.onreadystatechange=function(){
+
+         if(veri.readyState==4 && veri.status==200){
+
+             document.getElementById("veriCheck").innerHTML=veri.responseText;
+
+         }
+
+     }
+
+
+function changeImage(){
+
+         document.getElementById("imagePath").src="/veriCode?imagePath="+Math.random();
+
+}
+
+function ifRobot(){
+
+        var inputVeriNum= document.getElementById("veriCodeInput").value;
+
+    veri.open("GET","/veriCheck?num="+inputVeriNum,true);
+    veri.send();
+
+}
+
+    </script>
+
+</head>
+<body>
+
+<div id="bgup"></div>
+<div id="bgdown"></div>
+<div id="logo"><img src="/img/loginlogo.png" alt=""></div>
+
+
+<form th:action="@{/addUser}" th:object="${user}" method="post" class="form" >
+   Username: <input id="un" type="text" placeholder="must be longer than 7 characters" th:field="*{username}" onblur="verification()"/> <span id="nameError"></span><br><br>
+   Password: <input type="password" placeholder="password" th:field="*{password}"/><br><br>
+   Birthday: <input type="date" th:field="*{birthday}"><br><br>
+    Security Questions:<br>
+    <input name="Q1" type="text" placeholder="Type in a Question"/> <br>
+    <input name="A1" type="text" placeholder="Type in an Answer"> <br>
+
+
+    <img id="imagePath" src="/veriCode" onclick="changeImage()"/> <br>
+
+    &nbsp VerifyCode: <input type="text" id="veriCodeInput" onblur="ifRobot()"/> <span id="veriCheck"></span>
+
+    <br><br>
+
+<input type="submit" value="Let's Go!"/>
+    <a th:href="@{/Retrieve}">I have forgot my password</a>
+</form>
+
+
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap CSS -->
+
+    <style>
+        li{
+
+            margin-right:200px;
+
+        }
+
+        body{
+            margin:0px;
+            padding:0px;
+        }
+
+        #postArea{
+            width:40%;
+            margin-left:30%;
+            border:8px solid white;
+            background-color: lightgrey;
+            /*position:absolute;*/
+            padding:5px;
+            text-align: justify;
+        }
+
+        #mainCommentsList{
+            width:40%;
+            margin-left:30%;
+            position:relative;
+            border:1px solid lightgrey;
+            background-color:lightgray;
+        }
+
+        #addCommentsHere{
+            width:40%;
+            margin-left:30%;
+            position:relative;
+        }
+
+        #textbox{
+            width:100%;
+        }
+
+
+
+
+    </style>
+
+    <script th:inline="javascript">
+        var xhr = new XMLHttpRequest();
+        /*<![CDATA[*/
+        var articleId = /*[[${temporaryArticleId}]]*/'user name';
+        /*]]>*/
+
+
+
+        xhr.onreadystatechange=function(){
+           if(xhr.readyState==4 && xhr.status==200){
+               var commentsJsonString = xhr.responseText;
+               var cJson = JSON.parse(commentsJsonString);
+
+               for(var x=0;x<cJson.length;x++) {
+                   var a = document.createElement("a");
+                   var mcl=document.getElementById("mainCommentsList");
+                   a.href = "/user/visituserID=" + cJson[x].authorId;
+                   a.innerHTML=cJson[x].authorName;
+                   var p = document.createElement("p");
+                   p.innerHTML = cJson[x].content;
+
+                    mcl.appendChild(a);
+                    mcl.appendChild(p);
+
+               }
+           }
+
+
+        }
+
+        xhr.open("GET","/loadComments?temporaryArticleId="+articleId,true);
+        xhr.send();
+
+    </script>
+
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/mainBlog">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/following">Following</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">Personal Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/exit">Log out</a>
+        </li>
+    </ul>
+    <form class="form-inline" action="/search" method="post">
+        <input class="form-control" type="text" placeholder="Search" name="name"/>
+        <input class="btn btn-success" type="submit" value="Search"/>
+    </form>
+
+</nav>
+<div id="postArea">
+    <h5><a th:text="${temporaryArticle.author.username}" th:href="@{'/user/visituserID='+${temporaryArticle.author.id}}"></a></h5> <br>
+
+    <h6>   <p th:text="${temporaryArticle.content}"></p></h6>
+<form action="/repost" method="post">
+    <input type="hidden" name="articleId" th:value="${temporaryArticleId}"/>
+    <input type="hidden" name="comment" value="test"/>
+    <input type="submit" value="forward"/>
+</form>
+
+</div>
+
+
+<div id="mainCommentsList">
+
+
+</div>
+
+<div id="addCommentsHere">
+    <form action="/comment">
+        <input type="hidden" name="articleId" th:value="${temporaryArticleId}"/>
+        <textarea name="content" id="textbox" placeholder="Comment here..."></textarea>
+
+        <input class="btn btn-success" type="submit"/>
+
+    </form>
+
+
+</div>
+
+
+</body>
+</html>

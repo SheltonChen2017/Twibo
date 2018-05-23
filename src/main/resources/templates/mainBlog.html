@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+    <title>Title</title>
+    <style>
+        body{
+            margin:0px;
+            padding:0px;
+        }
+        .time{
+
+
+            font-size:10px;
+
+        }
+        /*ul {*/
+            /*list-style-type: none;*/
+            /*margin: 0;*/
+            /*padding: 0;*/
+            /*overflow: hidden;*/
+            /*background-color: aqua;*/
+        /*}*/
+
+        /*li {*/
+            /*float: left;*/
+        /*}*/
+
+        /*li a {*/
+            /*display: block;*/
+            /*color: white;*/
+            /*text-align: center;*/
+            /*padding: 14px 16px;*/
+            /*text-decoration: none;*/
+        /*}*/
+
+        /*li a:hover {*/
+            /*background-color: #111;*/
+        /*}*/
+
+        #mainPostList{
+
+            width:40%;
+            /*left:50%;*/
+            margin-left:30%;
+            position:absolute;
+            /*background-color: lightgrey;*/
+             /*opacity:0.3;*/
+            /*border:1px solid firebrick;*/
+        }
+
+        .postClass{
+            background-color: lightgrey;
+            opacity:0.3;
+            border:1px solid firebrick;
+            /*background:rgba(255,00,255,0.5);*/
+        }
+
+        .postClass:hover{
+            background-color: aquamarine;
+            opacity:0.3;
+            border:1px solid white;
+        }
+
+        #mainPostList:hover{
+
+            width:40%;
+            /*left:50%;*/
+            margin-left:30%;
+            position:absolute;
+            /*background-color: aquamarine;*/
+            /*opacity:0.3;*/
+            /*border:1px solid white;*/
+
+        }
+
+        #contentArea{
+
+            width:60%;
+            margin-left:30%;
+            position:absolute;
+            height:100%;
+
+        }
+
+         #tweetArea{
+             width:40%;
+             margin-left:30%;
+             position:absolute;
+
+
+         }
+
+        a{
+            color:black;
+            text-decoration: none;
+
+        }
+        a:hover{
+
+           color:whitesmoke;
+        }
+
+        li{
+
+            margin-right:200px;
+
+        }
+
+    </style>
+
+<script>
+
+
+
+   var xhr = new XMLHttpRequest();
+   // xhr.open("GET","/loadPage",true);
+   xhr.onreadystatechange=function(){
+       if(xhr.readyState==4&&xhr.status==200){
+           var jaja = xhr.responseText;
+           // alert(jaja);
+           var articles=JSON.parse(jaja);
+            // alert(articles[1].articleId);
+/*
+* 顺序：authorName, authorId,content,articleId,articleDate
+*
+* */
+
+
+           var main = document.getElementById("mainPostList");
+           for(var x=0;x<articles.length;x++){
+               var d= document.createElement("div");
+               var a=document.createElement("a");
+                    a.href="/user/visituserID="+articles[x].authorId;
+                    a.innerHTML=articles[x].authorName;
+                    a.style.fontWeight="bold";
+                    var p = document.createElement("p");
+                    p.innerHTML = articles[x].content;
+               // --------------  Post Date: "+articles[x].articleDate
+                    var dp=document.createElement("p");
+                    dp.setAttribute("class","time");
+                    dp.innerHTML="Post Date: "+articles[x].articleDate;
+                    var ap=document.createElement("a");
+                    ap.href="/Posts/articleId="+articles[x].articleId;
+                    ap.innerHTML="Press here to view comments";
+                    ap.style.fontWeight="bold";
+                    p.style.textAlign="justify";
+                    // h51.appendChild(a);
+                    d.appendChild(a);
+                    d.appendChild(dp);
+                    d.appendChild(p);
+                    d.appendChild(ap);
+                    d.setAttribute("class","postClass");
+                    main.appendChild(d);
+
+           // <h5><a href="#">trunkunala</a></h5>
+           //     <p class="time">Post Date: May 14, 2018, 4:12:56 PM</p>
+           //     <p class="content">The Trump Administration continues to work to achieve a comprehensive peace agreement between the Israelis and the Palestinians.</p>
+           //     <h5>Press here to view comments</h5>
+
+           }
+
+       }
+
+   }
+
+        xhr.open("GET","/loadPage",true);
+        xhr.send();
+
+</script>
+
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/mainBlog">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/following">Following</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">Personal Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/exit">Log out</a>
+        </li>
+    </ul>
+    <form class="form-inline" action="/search" method="post">
+        <input class="form-control" type="text" placeholder="Search" name="name"/>
+        <input class="btn btn-success" type="submit" value="Search"/>
+    </form>
+
+</nav>
+<!--<h1 th:text="'Hello,'+${session.user.username}+',Welcome Aboard!'">Hello, User, Welcome Aboard!</h1>-->
+<br>
+
+
+<div id="tweetArea">
+   <form th:action="@{/publish}" method="post">
+<textarea name="content" id="contentArea" placeholder="Please twibo here..."></textarea>
+       <br><br>  <br><br>
+       <input type="submit" value="send" class="btn btn-info"/>
+
+   </form>
+</div>
+<br>
+
+<br><br><br><br><br>
+<!-- post 位置-->
+<div  id="mainPostList">
+
+<!--<a href="baidu.com">lyu xiao yi hahaha </a>-->
+
+
+</div>
+
+
+
+</body>
+</html>

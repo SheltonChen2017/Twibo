@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <style>
+        li{
+
+            margin-right:200px;
+
+        }
+
+        body{
+            margin:0px;
+            padding:0px;
+        }
+
+        #mainPostArea{
+           width:40%;
+            margin-left:30%;
+            position: relative;
+            border:1px solid grey;
+            margin-top:25px;
+            background-color: lightgrey;
+
+        }
+
+        #followuparea{
+
+            width:10%;
+            position:relative;
+            border:1px solid greenyellow;
+            margin-left:90%;
+            background-color:green;
+        }
+
+        #buttonFollow{
+
+            width:100%;
+
+        }
+
+
+
+    </style>
+
+    <script th:inline="javascript">
+
+
+
+       var xhr= new XMLHttpRequest();
+
+       var xhrInfo=new XMLHttpRequest();
+
+       /*<![CDATA[*/
+       var visitID = /*[[${individual.id}]]*/'user name';
+       /*]]>*/
+       xhr.onreadystatechange=function(){
+
+           if(xhr.readyState==4 && xhr.status==200){
+
+              document.getElementById("checkIfFollowed").innerHTML=xhr.responseText;
+
+           }
+
+       }
+
+       function checkStatus(){
+
+          xhr.open("GET","/checkIfFollowed?visitID="+visitID,true);
+           xhr.send();
+       }
+
+xhrInfo.onreadystatechange=function(){
+
+    if(xhrInfo.readyState==4 && xhrInfo.status==200){
+        var mainPost=document.getElementById("mainPostArea");
+        var rp = xhrInfo.responseText;
+        var awesomeJson=JSON.parse(rp);
+
+        for( var x=0; x<awesomeJson.length;x++){
+           var a= document.createElement("a");
+            a.href="/Posts/articleId="+awesomeJson[x].articleId;
+            a.innerHTML="Click here to view comments";
+            var p = document.createElement("p");
+            p.innerHTML=awesomeJson[x].content;
+            var pt=document.createElement("p");
+            pt.innerHTML=awesomeJson[x].articleDate;
+mainPost.appendChild(pt);
+mainPost.appendChild(p);
+mainPost.appendChild(a);
+
+        }
+
+
+    }
+
+}
+
+xhrInfo.open("GET","/loadIndividualPage?visitID="+visitID,true);
+xhrInfo.send();
+
+    </script>
+
+    <meta charset="UTF-8" >
+    <title>Title</title>
+</head>
+<body>
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="/mainBlog">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/following">Following</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">Personal Profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/exit">Log out</a>
+        </li>
+    </ul>
+    <form class="form-inline" action="/search" method="post">
+        <input class="form-control" type="text" placeholder="Search" name="name"/>
+        <input class="btn btn-success" type="submit" value="Search"/>
+    </form>
+
+</nav>
+<div id="followuparea">
+
+    <button onclick="checkStatus()" id="buttonFollow" class="btn btn-success">Follow This Guy</button>
+    <span id="checkIfFollowed"></span>
+
+</div>
+<div id="mainPostArea">
+
+
+
+</div>
+
+
+
+
+</body>
+</html>

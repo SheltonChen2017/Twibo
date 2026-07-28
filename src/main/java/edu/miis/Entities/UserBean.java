@@ -1,199 +1,155 @@
 package edu.miis.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.stereotype.Component;
-
-@Entity(name = "UserInfo")
-@Component
+@Entity
+@Table(name = "user_info")
 public class UserBean implements Serializable {
 
-	/**
-		 * 
-		 */
-	private static final long serialVersionUID = 1L;
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	@Column(length = 35, unique = true, nullable = false)
-	@NotNull(message="Username can't be left empty!")
-	@Size(min=8,max=20,message="Username must be longer than 8 and shorter than 20 characters")
-	private String username;
-	@NotNull(message="Password can't be left empty!")
-	@Size(min=8,max=20,message="Password must be longer than 8 and shorter than 20 characters")
-	@Column(length = 35, unique = false, nullable = false)
-	private String password;
-	@Column(name = "DateOfBirth")
-	@NotNull(message="Date of Birth is used for password retrieval thus cannot be left alone")
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@Temporal(TemporalType.DATE)
-	private Date birthday;
-	@Column(length = 150, unique = true, nullable = true)
-	private String profilePhoto;
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "author",fetch= FetchType.EAGER)
-	private Set<Article> articles = new HashSet<Article>();
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "author",fetch= FetchType.EAGER)
-	private Set<Comment> comments = new HashSet<Comment>();
-	@OneToMany(cascade=CascadeType.ALL,mappedBy="user",orphanRemoval=true,fetch= FetchType.EAGER)
-	private Set<Relationship> relationships= new HashSet<Relationship>();
-	@OneToMany(cascade=CascadeType.ALL,mappedBy="sender",fetch=FetchType.EAGER)
-	private Set<PostNotification> notifications=new HashSet<PostNotification>();
-	@LastModifiedDate
-	@Column
-	private Date lastLoginTime = new Date();
+    private static final long serialVersionUID = 1L;
 
-	@OneToMany(mappedBy="forwarder",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-	private Set<Repost> reposts;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	public Set<Repost> getReposts() {
-		return reposts;
-	}
+    @Column(length = 35, unique = true, nullable = false)
+    private String username;
 
-	public void setReposts(Set<Repost> reposts) {
-		this.reposts = reposts;
-	}
+    @JsonIgnore
+    @Column(length = 100, nullable = false)
+    private String password;
 
-	public Date getLastLoginTime() {
-		return lastLoginTime;
-	}
+    @Column(name = "DateOfBirth", nullable = false)
+    private LocalDate birthday;
 
-	public void setLastLoginTime(Date lastLoginTime) {
-		this.lastLoginTime = lastLoginTime;
-	}
+    @Column(name = "profile_photo", length = 255)
+    private String profilePhoto;
 
-	public Set<Relationship> getRelationships() {
-		return relationships;
-	}
+    @Column(name = "last_login_time")
+    private Instant lastLoginTime = Instant.now();
 
-	public Set<PostNotification> getNotifications() {
-		return notifications;
-	}
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Article> articles = new HashSet<>();
 
-	public void setNotifications(Set<PostNotification> notifications) {
-		this.notifications = notifications;
-	}
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comment> comments = new HashSet<>();
 
-	public void setRelationships(Set<Relationship> relationships) {
-		this.relationships = relationships;
-	}
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Relationship> relationships = new HashSet<>();
 
-	@OneToMany(mappedBy = "ownerr",cascade={CascadeType.ALL})
-	private Set<SecurityQuestion> securityquestions=new HashSet<SecurityQuestion>();
+    @OneToMany(mappedBy = "forwarder", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Repost> reposts = new HashSet<>();
 
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SecurityQuestion> securityQuestions = new HashSet<>();
 
-	public void addQA(SecurityQuestion sq){
+    public void addArticle(Article article) {
+        articles.add(article);
+        article.setAuthor(this);
+    }
 
-		if(sq!=null) {
-			securityquestions.add(sq);
-		}
-	}
+    public void addSecurityQuestion(SecurityQuestion securityQuestion) {
+        securityQuestions.add(securityQuestion);
+        securityQuestion.setOwner(this);
+    }
 
-	public UserBean(Long id, String username, String password, Date birthday, String profilePhoto,
-			Set<Article> articles, Set<Comment> comments,
-			Set<SecurityQuestion> securityquestions) {
-		super();
-		this.id = id;
-		this.username = username;
-		this.password = password;
-		this.birthday = birthday;
-		this.profilePhoto = profilePhoto;
-		this.articles = articles;
-		this.comments = comments;
-		this.securityquestions = securityquestions;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof UserBean)) return false;
-		UserBean userBean = (UserBean) o;
-		return Objects.equals(getUsername(), userBean.getUsername()) &&
-				Objects.equals(getPassword(), userBean.getPassword());
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	@Override
-	public int hashCode() {
+    public String getUsername() {
+        return username;
+    }
 
-		return Objects.hash(getUsername(), getPassword());
-	}
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	public UserBean() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public Long getId() {
-		return id;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    public LocalDate getBirthday() {
+        return birthday;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public void setBirthday(LocalDate birthday) {
+        this.birthday = birthday;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public String getProfilePhoto() {
+        return profilePhoto;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public void setProfilePhoto(String profilePhoto) {
+        this.profilePhoto = profilePhoto;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public Instant getLastLoginTime() {
+        return lastLoginTime;
+    }
 
-	public Date getBirthday() {
-		return birthday;
-	}
+    public void setLastLoginTime(Instant lastLoginTime) {
+        this.lastLoginTime = lastLoginTime;
+    }
 
-	public void setBirthday(Date birthday) {
-		this.birthday = birthday;
-	}
+    public Set<Article> getArticles() {
+        return articles;
+    }
 
-	public String getProfilePhoto() {
-		return profilePhoto;
-	}
+    public Set<Comment> getComments() {
+        return comments;
+    }
 
-	public void setProfilePhoto(String profilePhoto) {
-		this.profilePhoto = profilePhoto;
-	}
+    public Set<Relationship> getRelationships() {
+        return relationships;
+    }
 
-	public Set<Article> getArticles() {
-		return articles;
-	}
+    public Set<Repost> getReposts() {
+        return reposts;
+    }
 
-	public void setArticles(Set<Article> articles) {
-		this.articles = articles;
-	}
+    public Set<SecurityQuestion> getSecurityQuestions() {
+        return securityQuestions;
+    }
 
-	public Set<Comment> getComments() {
-		return comments;
-	}
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof UserBean user)) {
+            return false;
+        }
+        return username != null && username.equalsIgnoreCase(user.username);
+    }
 
-	public void setComments(Set<Comment> comments) {
-		this.comments = comments;
-	}
-
-
-	public Set<SecurityQuestion> getSecurityquestions() {
-		return securityquestions;
-	}
-
-	public void setSecurityquestions(Set<SecurityQuestion> securityquestions) {
-		this.securityquestions = securityquestions;
-	}
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(username == null ? null : username.toLowerCase(Locale.ROOT));
+    }
 }

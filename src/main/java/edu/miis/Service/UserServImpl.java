@@ -1,301 +1,277 @@
 package edu.miis.Service;
 
-
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import javax.annotation.Resource;
-
-
 import edu.miis.Dao.ArticlesRepository;
+import edu.miis.Dao.CommentRepository;
+import edu.miis.Dao.RelationshipRepository;
 import edu.miis.Dao.RepostRepository;
 import edu.miis.Dao.UserRepository;
 import edu.miis.DataTransferPojo.ArticleTransferPojo;
-import edu.miis.Entities.*;
-import org.hibernate.Session;
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.miis.DataTransferPojo.CommentTransferPojo;
+import edu.miis.DataTransferPojo.RegistrationForm;
+import edu.miis.DataTransferPojo.UserTransferPojo;
+import edu.miis.Entities.Article;
+import edu.miis.Entities.Comment;
+import edu.miis.Entities.Relationship;
+import edu.miis.Entities.Repost;
+import edu.miis.Entities.SecurityQuestion;
+import edu.miis.Entities.UserBean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-@Service("userServ")
-@Transactional(propagation=Propagation.REQUIRED, readOnly=false,rollbackFor={Exception.class, RuntimeException.class})
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
+@Service
+@Transactional
 public class UserServImpl implements IUserServ {
-//	@Resource(name="userDao")
-	@Autowired
-	private UserRepository userDao;
-//	@Resource(name="articleDao")
-	@Autowired
-	private ArticlesRepository articleDao;
-@Autowired
-	private RepostRepository repostRepository;
-	@Override
-	public boolean Login(UserBean user) {
-
-	List<UserBean> list = userDao.selectAll();
-//userDao.
-//		Iterable<UserBean> all = userDao.findAll();
-
-		for(UserBean userbean:list){
-
-		if(user.equals(userbean)){
-//			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//			String format = sdf.format(new Date());
-			Date date = new Date();
-		userbean.setLastLoginTime(date);
-		userDao.save(userbean);
-			return true;
-		}
-	}
-		return false;
-	}
 
-	@Override
-	public boolean Register(UserBean user) {
-
-		userDao.save(user);
-
-		return false;
-	}
-
-	@Override
-	public boolean verifyUsername(String username) {
-//		System.out.println(userDao.toString());
-		List<UserBean> ub = userDao.usernameVerify(username);
-
-		if(!ub.isEmpty()){
-			return false;
-		}
-
-		return true;
-	}
-
-	@Override
-	public String loadUsername(String username) {
-
-//		String state=userDao.popQuestions(username);
-//		return state;
-		return null;
-	}
-
-	@Override
-	public boolean verifyQA(String username, String question, String answer) {
-		List<UserBean> list = userDao.selectByUsername(username);
-		UserBean user = list.get(0);
-		Set<SecurityQuestion> sqs = user.getSecurityquestions();
-		System.out.println("smiling from UserServImpl.java"+user.getUsername());
-		SecurityQuestion sq = new SecurityQuestion();
-		sq.setAnswer(answer);
-		sq.setQuestion(question);
-		boolean flag = sqs.contains(sq);
-		return flag;
-
-	}
-
-	public UserBean selectByUsername(String username){
-		List<UserBean> userBeans = userDao.selectByUsername(username);
-		UserBean user = userBeans.get(0);
-
-		return user;
-	}
-
-	@Override
-	public UserBean updateUser(UserBean user) {
-
-		UserBean merge = userDao.save(user);
-//		userDao.
-		return merge;
-	}
-
-	public List<UserBean> selectByExample(UserBean user){
-		List<UserBean> list = userDao.selectAll();
-return list;
-
-	}
-
-	@Override
-	public List<Article> loadAllArticles() {
-		List<Article> list = articleDao.loadAll();
-		return list;
-	}
-
-
-
-	@Override
-	public Set<Article> loadUserArticles(Long userID) {
-
-		List<UserBean> load = userDao.load(userID);
-		UserBean ub = load.get(0);
-		Set<Article> personalArticles = ub.getArticles();
-
-		return personalArticles;
-
-
-	}
-
-	@Override
-	public UserBean loadUser(Long UserID) {
-		List<UserBean> load = userDao.load(UserID);
-		UserBean individual = load.get(0);
-		return individual;
-
-	}
-
-	@Override
-	public Session getSession() {
-		return null;
-	}
-
-	@Override
-	public void saveComent(Long articleID, String commentContent, UserBean user) {
-
-		List<Article> list = articleDao.loadOne(articleID);
-		Article article = list.get(0);
-		Comment comment = new Comment();
-		comment.setArticle(article);
-		comment.setContent(commentContent);
-		comment.setAuthor(user);
-//		article.getComments().add(comment);
-		PostNotification pn = new PostNotification();
-		pn.setComment(comment);
-		pn.setSender(user);
-		user.getNotifications().add(pn);
-		comment.setNotification(pn);
-		user.getComments().add(comment);
-
-		articleDao.save(article);
-
-
-
-	}
-
-	@Override
-	public List<Article> loadArticles(UserBean user) {
-		ArrayList<Article> articles = new ArrayList<>();
-		UserBean ub = this.selectByUsername(user.getUsername());
-		Set<Relationship> rls = ub.getRelationships();
-		for(Relationship rlt:rls){
-			Long fid = rlt.getFid();
-			Set<Article> userArticles = this.loadUserArticles(fid);
-			for(Article a:userArticles){
-				articles.add(a);
-			}
-		}
-
-		 Set<Article> a2 = ub.getArticles();
-			for(Article a:a2){
-
-				articles.add(a);
-
-			}
-
-		Collections.sort(articles,new Comparator<Article>(){
-			@Override
-			public int compare(Article a1, Article a2) {
-				if(a1.getId()>a2.getId()){
-					return 1;
-				}else if(a1.getId()==a2.getId()){
-					return 0;
-
-				} else {
-					return -1;
-
-				}
-
-
-			}
-		});
-
-		return articles;
-	}
-
-	@Override
-	public List<Article> queryByTime(Long id, Date lastLog) {
-
-		System.out.println("dfdfdfdfdfdfdfdfdfdfdfdfdfdfdfd!!!!!!!!!!!!!!!!!!!!!!!");
-		List<Article> list=articleDao.queryByTime(id,lastLog);
-System.out.println("dfdfdfdfdfdfdfdfdfdfdfdfdfdfdfd!!!!!!!!!!!!!!!!!!!!!!!");
-
-
-//		return list;
-		return list;
-	}
-
-	@Override
-	public List<Comment> queryCommentByTime(Long aid, Long entry) {
-//		return null;
-
-		List<Comment> comments = articleDao.queryCommentByTime(aid);
-		return comments;
-	}
-
-	@Override
-	public Article loadArticleById(Long aid) {
-		List<Article> list = articleDao.loadOne(aid);
-
-		return list.get(0);
-	}
-
-	@Override
-	public Article loadOneArticle(Long articleId) {
-
-		List<Article> list = articleDao.queryById(articleId);
-
-		if(!list.isEmpty()){
-			return list.get(0);
-		}
-		return null;
-	}
-
-	@Override
-	public List<ArticleTransferPojo> loadIndividualPage(Long userId, Date currentDate) {
-		List<Article> articles = articleDao.queryByTime(userId,currentDate);
-
-//		String authorName;
-//		Long authorId;
-//		String content;
-//		Long articleId;
-//		Date articleDate;
-		ArrayList<ArticleTransferPojo> atps = new ArrayList<>();
-		for (Article a:articles){
-			ArticleTransferPojo atp = new ArticleTransferPojo(a.getAuthor().getUsername(), a.getAuthor().getId(), a.getContent(), a.getId(), a.getInsertTime());
-			atps.add(atp);
-
-		}
-
-		// 按照id 排序
-
-		Collections.sort(atps, new Comparator<ArticleTransferPojo>() {
-			@Override
-			public int compare(ArticleTransferPojo a1, ArticleTransferPojo a2) {
-				if(a1.getArticleId()<a2.getArticleId()){
-					return 1;
-				} else if(a1.getArticleId()==a2.getArticleId()){
-					return 0;
-				}else{
-					return -1;
-				}
-			}
-		});
-
-
-		return atps;
-	}
-
-	@Override
-	public List<UserBean> searchByName(String name) {
-		List<UserBean> users=userDao.searchByName(name);
-		return users;
-	}
-
-	@Override
-	public void saveRepost(Repost repost) {
-
-		repostRepository.save(repost);
-
-	}
-
-
+    private final UserRepository userRepository;
+    private final ArticlesRepository articleRepository;
+    private final CommentRepository commentRepository;
+    private final RelationshipRepository relationshipRepository;
+    private final RepostRepository repostRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final int feedPageSize;
+    private final String dummyAnswerHash;
+
+    public UserServImpl(
+            UserRepository userRepository,
+            ArticlesRepository articleRepository,
+            CommentRepository commentRepository,
+            RelationshipRepository relationshipRepository,
+            RepostRepository repostRepository,
+            PasswordEncoder passwordEncoder,
+            @Value("${twibo.feed.page-size:30}") int feedPageSize
+    ) {
+        this.userRepository = userRepository;
+        this.articleRepository = articleRepository;
+        this.commentRepository = commentRepository;
+        this.relationshipRepository = relationshipRepository;
+        this.repostRepository = repostRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.feedPageSize = Math.max(1, Math.min(feedPageSize, 100));
+        this.dummyAnswerHash = passwordEncoder.encode("twibo-invalid-recovery-answer");
+    }
+
+    @Override
+    public UserBean register(RegistrationForm form) {
+        String username = normalizeUsername(form.getUsername());
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
+            throw new IllegalArgumentException("That username is already in use.");
+        }
+
+        UserBean user = new UserBean();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(form.getPassword()));
+        user.setBirthday(form.getBirthday());
+
+        SecurityQuestion securityQuestion = new SecurityQuestion();
+        securityQuestion.setQuestion(form.getSecurityQuestion().trim());
+        securityQuestion.setAnswer(passwordEncoder.encode(form.getSecurityAnswer()));
+        user.addSecurityQuestion(securityQuestion);
+
+        return userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<UserBean> findByUsername(String username) {
+        return userRepository.findByUsernameIgnoreCase(normalizeUsername(username));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserBean requireUser(String username) {
+        return findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserBean requireUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Article requireArticle(Long id) {
+        return articleRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+    }
+
+    @Override
+    public Article publish(String username, String content) {
+        String normalizedContent = normalizeContent(content, 5000, "Post");
+        UserBean author = requireUser(username);
+        Article article = new Article();
+        article.setContent(normalizedContent);
+        article.setAuthor(author);
+        return articleRepository.save(article);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArticleTransferPojo> loadFeed(String username, int page) {
+        UserBean user = requireUser(username);
+        List<Long> authorIds = new ArrayList<>(relationshipRepository.findFollowedIds(user.getId()));
+        authorIds.add(user.getId());
+        return articleRepository.findByAuthorIdIn(authorIds, articlePage(page))
+                .map(ArticleTransferPojo::from)
+                .getContent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ArticleTransferPojo> loadIndividualPage(Long userId, int page) {
+        requireUser(userId);
+        return articleRepository.findByAuthorId(userId, articlePage(page))
+                .map(ArticleTransferPojo::from)
+                .getContent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentTransferPojo> loadComments(Long articleId) {
+        requireArticle(articleId);
+        return commentRepository.findByArticleIdOrderByIdAsc(articleId).stream()
+                .map(CommentTransferPojo::from)
+                .toList();
+    }
+
+    @Override
+    public void addComment(String username, Long articleId, String content) {
+        Comment comment = new Comment();
+        comment.setAuthor(requireUser(username));
+        comment.setArticle(requireArticle(articleId));
+        comment.setContent(normalizeContent(content, 5000, "Comment"));
+        commentRepository.save(comment);
+    }
+
+    @Override
+    public boolean toggleFollow(String username, Long followedUserId) {
+        UserBean owner = requireUser(username);
+        requireUser(followedUserId);
+        if (owner.getId().equals(followedUserId)) {
+            throw new IllegalArgumentException("You cannot follow yourself.");
+        }
+
+        Optional<Relationship> relationship =
+                relationshipRepository.findByUserIdAndFid(owner.getId(), followedUserId);
+        if (relationship.isPresent()) {
+            relationshipRepository.delete(relationship.get());
+            return false;
+        }
+        relationshipRepository.save(new Relationship(followedUserId, owner));
+        return true;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isFollowing(String username, Long followedUserId) {
+        UserBean owner = requireUser(username);
+        return relationshipRepository.existsByUserIdAndFid(owner.getId(), followedUserId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserTransferPojo> searchByName(String name) {
+        String query = name == null ? "" : name.trim();
+        if (query.isEmpty()) {
+            return List.of();
+        }
+        return userRepository.searchByUsername(query, PageRequest.of(0, 50)).stream()
+                .map(UserTransferPojo::from)
+                .toList();
+    }
+
+    @Override
+    public boolean repost(String username, Long articleId, String comment) {
+        UserBean user = requireUser(username);
+        Article article = requireArticle(articleId);
+        if (repostRepository.existsByRefIdAndForwarderId(articleId, user.getId())) {
+            return false;
+        }
+
+        Repost repost = new Repost();
+        repost.setForwarder(user);
+        repost.setRef(article);
+        repost.setComment(comment == null ? "" : normalizeContent(comment, 500, "Repost comment"));
+        repostRepository.save(repost);
+        return true;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> loadSecurityQuestions(String username) {
+        return userRepository.findWithSecurityQuestions(normalizeUsername(username))
+                .map(user -> user.getSecurityQuestions().stream()
+                        .map(SecurityQuestion::getQuestion)
+                        .sorted()
+                        .toList())
+                .orElse(List.of());
+    }
+
+    @Override
+    public boolean verifySecurityAnswer(String username, String question, String answer) {
+        Optional<UserBean> optionalUser = userRepository.findWithSecurityQuestions(normalizeUsername(username));
+        if (optionalUser.isEmpty() || question == null || answer == null) {
+            if (answer != null) {
+                passwordEncoder.matches(answer, dummyAnswerHash);
+            }
+            return false;
+        }
+
+        Optional<SecurityQuestion> match = optionalUser.get().getSecurityQuestions().stream()
+                .filter(item -> item.getQuestion().equals(question))
+                .filter(item -> passwordEncoder.matches(answer, item.getAnswer()))
+                .findFirst();
+        match.filter(item -> passwordEncoder.upgradeEncoding(item.getAnswer()))
+                .ifPresent(item -> item.setAnswer(passwordEncoder.encode(answer)));
+        return match.isPresent();
+    }
+
+    @Override
+    public void resetPassword(String username, String password) {
+        if (password == null || password.length() < 10 || password.length() > 72) {
+            throw new IllegalArgumentException("Password must contain between 10 and 72 characters.");
+        }
+        UserBean user = requireUser(username);
+        user.setPassword(passwordEncoder.encode(password));
+    }
+
+    private PageRequest articlePage(int page) {
+        int safePage = Math.max(page, 0);
+        return PageRequest.of(
+                safePage,
+                feedPageSize,
+                Sort.by(Sort.Order.desc("insertTime"), Sort.Order.desc("id"))
+        );
+    }
+
+    private static String normalizeUsername(String username) {
+        if (username == null) {
+            return "";
+        }
+        return username.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static String normalizeContent(String value, int maxLength, String label) {
+        String normalized = value == null ? "" : value.trim();
+        if (normalized.isEmpty()) {
+            throw new IllegalArgumentException(label + " cannot be empty.");
+        }
+        if (normalized.length() > maxLength) {
+            throw new IllegalArgumentException(label + " is too long.");
+        }
+        return normalized;
+    }
 }

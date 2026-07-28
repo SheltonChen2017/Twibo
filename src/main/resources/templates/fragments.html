@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="nav" th:fragment="nav">
+    <a th:href="@{/mainBlog}">Twibo</a>
+    <div class="nav-actions">
+        <form class="inline-form" method="post" th:action="@{/search}">
+            <label class="sr-only" for="nav-search">Search users</label>
+            <input id="nav-search" name="name" placeholder="Search users" required type="search">
+            <button type="submit">Search</button>
+        </form>
+        <form method="post" th:action="@{/logout}">
+            <button class="danger" type="submit">Log out</button>
+        </form>
+    </div>
+</nav>
+</body>
+</html>

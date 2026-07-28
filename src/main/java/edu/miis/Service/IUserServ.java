@@ -1,49 +1,48 @@
 package edu.miis.Service;
 
 import edu.miis.DataTransferPojo.ArticleTransferPojo;
+import edu.miis.DataTransferPojo.CommentTransferPojo;
+import edu.miis.DataTransferPojo.RegistrationForm;
+import edu.miis.DataTransferPojo.UserTransferPojo;
 import edu.miis.Entities.Article;
-import edu.miis.Entities.Comment;
-import edu.miis.Entities.Repost;
 import edu.miis.Entities.UserBean;
-import org.hibernate.Session;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
 
-import javax.servlet.http.HttpSession;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 public interface IUserServ {
 
-boolean Login(UserBean user);
-boolean Register(UserBean user);
-boolean verifyUsername(String username);
-String loadUsername(String username);
-boolean verifyQA(String username, String question, String answer);
-UserBean selectByUsername(String username);
-UserBean updateUser(UserBean user);
-    List<UserBean> selectByExample(UserBean user);
-    List<Article> loadAllArticles();
-    Set<Article> loadUserArticles(Long UserID);
-    UserBean loadUser(Long UserID);
-    Session getSession();
+    UserBean register(RegistrationForm form);
 
-    void saveComent(Long id, String commentContent, UserBean user);
-  List<Article> loadArticles(UserBean user);
+    Optional<UserBean> findByUsername(String username);
 
-    List<Article> queryByTime(Long id,Date lastLog);
-    List<Comment> queryCommentByTime(Long aid,Long entry);
-    Article loadArticleById(Long aid);
-    Article loadOneArticle(Long articleId);
+    UserBean requireUser(String username);
 
-    List<ArticleTransferPojo> loadIndividualPage(Long userId, Date currentDate);
+    UserBean requireUser(Long id);
 
-    List<UserBean> searchByName(String name);
+    Article requireArticle(Long id);
 
-    void saveRepost(Repost repost);
+    Article publish(String username, String content);
 
+    List<ArticleTransferPojo> loadFeed(String username, int page);
 
-//    String popQuestions(String username);
+    List<ArticleTransferPojo> loadIndividualPage(Long userId, int page);
+
+    List<CommentTransferPojo> loadComments(Long articleId);
+
+    void addComment(String username, Long articleId, String content);
+
+    boolean toggleFollow(String username, Long followedUserId);
+
+    boolean isFollowing(String username, Long followedUserId);
+
+    List<UserTransferPojo> searchByName(String name);
+
+    boolean repost(String username, Long articleId, String comment);
+
+    List<String> loadSecurityQuestions(String username);
+
+    boolean verifySecurityAnswer(String username, String question, String answer);
+
+    void resetPassword(String username, String password);
 }

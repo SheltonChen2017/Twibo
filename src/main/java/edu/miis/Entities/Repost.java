@@ -1,63 +1,45 @@
 package edu.miis.Entities;
 
-import javax.annotation.Generated;
-import javax.persistence.*;
-import java.util.Objects;
-import java.util.Set;
-//import javax.xml.bind.annotation.XmlIDREF;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+
+import java.time.Instant;
 
 @Entity
+@Table(
+        name = "repost",
+        uniqueConstraints = @UniqueConstraint(name = "uk_repost_article_user", columnNames = {"ref_id", "forwarder_id"})
+)
 public class Repost {
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-@ManyToOne(cascade=CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ref_id", nullable = false)
     private Article ref;
-@ManyToOne(cascade=CascadeType.ALL)
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "forwarder_id", nullable = false)
     private UserBean forwarder;
-@Column
-private String comment;
 
-    public String getComment() {
-        return comment;
-    }
+    @Column(length = 500)
+    private String comment;
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Repost(Article ref, UserBean forwarder) {
-        this.ref = ref;
-        this.forwarder = forwarder;
-    }
-
-    public Repost() {
-
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Repost)) return false;
-        Repost repost = (Repost) o;
-        return Objects.equals(getId(), repost.getId()) &&
-                Objects.equals(getRef(), repost.getRef()) &&
-                Objects.equals(getForwarder(), repost.getForwarder());
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(getId(), getRef(), getForwarder());
-    }
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt = Instant.now();
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Article getRef() {
@@ -74,5 +56,17 @@ private String comment;
 
     public void setForwarder(UserBean forwarder) {
         this.forwarder = forwarder;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 }

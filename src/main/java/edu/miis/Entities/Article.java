@@ -1,120 +1,108 @@
 package edu.miis.Entities;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.*;
-//import javax.persistence.OneToOne;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.stereotype.Component;
-
-import javax.persistence.Entity;
-
-//@Component
 @Entity
-@Table(name="Article")
+@Table(name = "article")
 public class Article implements Serializable {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	@Column(nullable = true, unique = false, length = 100)
-	private String title;
-	@Column(nullable = false, unique = false, length = 5000)
-	private String content;
-	@ManyToOne(optional = false,cascade=CascadeType.ALL)
-	@JoinColumn(name = "author_id")
-	private UserBean author;
-	@ManyToOne
-	@JoinColumn(name = "theme_id")
-	private Theme theme;
-	@OneToMany(mappedBy = "article",fetch= FetchType.EAGER,cascade=CascadeType.ALL)
-	private Set<Comment> comments;
-	@Column
-//	@DateTimeFormat(pattern="yyyy-MM-dd")
-	@CreatedDate
-	private Date insertTime = new Date();
 
-	@OneToMany(cascade = CascadeType.ALL,mappedBy = "ref")
-	private Set<Repost> reposts;
+    private static final long serialVersionUID = 1L;
 
-	public Set<Repost> getReposts() {
-		return reposts;
-	}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	public void setReposts(Set<Repost> reposts) {
-		this.reposts = reposts;
-	}
+    @Column(length = 100)
+    private String title;
 
+    @Column(nullable = false, length = 5000)
+    private String content;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "author_id", nullable = false)
+    private UserBean author;
 
-	public Long getId() {
-		return id;
-	}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "theme_id")
+    private Theme theme;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Comment> comments = new HashSet<>();
 
-	public Date getInsertTime() {
-		return insertTime;
-	}
+    @Column(name = "insert_time", nullable = false, updatable = false)
+    private Instant insertTime = Instant.now();
 
-	public void setInsertTime(Date insertTime) {
-		this.insertTime = insertTime;
-	}
+    @OneToMany(mappedBy = "ref", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Repost> reposts = new HashSet<>();
 
-	public String getTitle() {
-		return title;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-	public String getContent() {
-		return content;
-	}
+    public String getTitle() {
+        return title;
+    }
 
-	public void setContent(String content) {
-		this.content = content;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-	public UserBean getAuthor() {
-		return author;
-	}
+    public String getContent() {
+        return content;
+    }
 
-	public void setAuthor(UserBean author) {
-		this.author = author;
-	}
+    public void setContent(String content) {
+        this.content = content;
+    }
 
-	public Theme getTheme() {
-		return theme;
-	}
+    public UserBean getAuthor() {
+        return author;
+    }
 
-	public void setTheme(Theme theme) {
-		this.theme = theme;
-	}
+    public void setAuthor(UserBean author) {
+        this.author = author;
+    }
 
-	public Set<Comment> getComments() {
-		return comments;
-	}
+    public Theme getTheme() {
+        return theme;
+    }
 
-	public void setComments(Set<Comment> comments) {
-		this.comments = comments;
-	}
+    public void setTheme(Theme theme) {
+        this.theme = theme;
+    }
 
-	public Article(String title, String content, UserBean author, Theme theme, Set<Comment> comments) {
-		this.title = title;
-		this.content = content;
-		this.author = author;
-		this.theme = theme;
-		this.comments = comments;
-	}
+    public Set<Comment> getComments() {
+        return comments;
+    }
 
-	public Article() {
-	}
+    public Instant getInsertTime() {
+        return insertTime;
+    }
+
+    public void setInsertTime(Instant insertTime) {
+        this.insertTime = insertTime;
+    }
+
+    public Set<Repost> getReposts() {
+        return reposts;
+    }
 }

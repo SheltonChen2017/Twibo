@@ -2,14 +2,28 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Log in · Twibo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-<form th:object="${user}" th:action="@{/loginto}" method="post">
-username: <input type="text" th:field="*{username}" placeholder="username"/>
-password: <input type="password" th:field="*{password}" placeholder="password"/>
-
-    <input type="submit" value="submitInfo">
-</form>
+<main class="container">
+    <section class="card auth-card">
+        <h1>Welcome back</h1>
+        <p class="error" th:if="${param.error}">The username or password was incorrect.</p>
+        <p class="success" th:if="${param.logout}">You have been logged out.</p>
+        <p class="success" th:if="${param.registered}">Account created. You can now log in.</p>
+        <p class="success" th:if="${param.passwordReset}">Password updated. You can now log in.</p>
+        <form method="post" th:action="@{/loginto}">
+            <label for="username">Username</label>
+            <input autocomplete="username" id="username" maxlength="35" name="username" required type="text">
+            <label for="password">Password</label>
+            <input autocomplete="current-password" id="password" name="password" required type="password">
+            <p><button type="submit">Log in</button></p>
+        </form>
+        <p><a th:href="@{/Retrieve}">Forgot your password?</a></p>
+        <p>New here? <a th:href="@{/signup}">Create an account</a>.</p>
+    </section>
+</main>
 </body>
 </html>

@@ -2,22 +2,23 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <title>Search · Twibo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-
-<table>
-    <th:block th:each="user:${users}">
-        <tr>
-           <td><a th:text="${user.username}" th:href="'user/visituserID='+${user.id}"></a></td>
-
-        </tr>
-
-
-    </th:block>
-
-
-</table>
-
+<div th:replace="~{fragments :: nav}"></div>
+<main class="container">
+    <section class="card">
+        <h1>Search results</h1>
+        <p class="meta" th:text="'Results for “' + ${query} + '”'"></p>
+        <p class="empty" th:if="${#lists.isEmpty(users)}">No matching users.</p>
+        <ul th:unless="${#lists.isEmpty(users)}">
+            <li th:each="user : ${users}">
+                <a th:href="@{'/users/' + ${user.id}}" th:text="${user.username}"></a>
+            </li>
+        </ul>
+    </section>
+</main>
 </body>
 </html>

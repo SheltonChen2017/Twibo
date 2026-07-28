@@ -1,46 +1,48 @@
 package edu.miis.Entities;
 
-import org.springframework.stereotype.Component;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
-import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
 
 @Entity
-@Component
+@Table(
+        name = "relationship",
+        uniqueConstraints = @UniqueConstraint(name = "uk_relationship_owner_followed", columnNames = {"ownerID", "followed"})
+)
 public class Relationship implements Serializable {
 
-   /*
-   *
-   * 关系设计：
-   * 该表为 关注表。
-   * 
-   * */
+    private static final long serialVersionUID = 1L;
 
-@Id
-@GeneratedValue(strategy= GenerationType.IDENTITY)
-private Long id;
-@Column(nullable=false,unique=false,name="followed")
-private Long fid;
-@ManyToOne(optional=false)
-@JoinColumn(name="ownerID")
-private UserBean user;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public Relationship(Long fid,UserBean user) {
-        this.fid = fid;
-        this.user=user;
+    @Column(name = "followed", nullable = false)
+    private Long fid;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ownerID", nullable = false)
+    private UserBean user;
+
+    public Relationship() {
+    }
+
+    public Relationship(Long followedId, UserBean owner) {
+        this.fid = followedId;
+        this.user = owner;
     }
 
     public Long getId() {
-
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Relationship() {
     }
 
     public Long getFid() {
@@ -51,21 +53,6 @@ private UserBean user;
         this.fid = fid;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Relationship)) return false;
-        Relationship that = (Relationship) o;
-        return Objects.equals(getFid(), that.getFid()) &&
-                Objects.equals(getUser(), that.getUser());
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(getFid(), getUser());
-    }
-
     public UserBean getUser() {
         return user;
     }
@@ -73,5 +60,4 @@ private UserBean user;
     public void setUser(UserBean user) {
         this.user = user;
     }
-
 }

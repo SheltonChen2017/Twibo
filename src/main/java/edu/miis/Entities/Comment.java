@@ -1,74 +1,75 @@
 package edu.miis.Entities;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 import java.io.Serializable;
+import java.time.Instant;
 
-import javax.persistence.*;
-//import javax.persistence.OneToOne;
-
-import org.springframework.stereotype.Component;
-
-//@Component
-@Entity(name = "commentt")
+@Entity
+@Table(name = "commentt")
 public class Comment implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	@Column(nullable = false, unique = false, length = 5000)
-	private String content;
-	@ManyToOne
-	private Article article;
-	@ManyToOne
-	@JoinColumn(name = "userbean_id")
-	private UserBean author;
+    private static final long serialVersionUID = 1L;
 
-	@OneToOne(mappedBy = "comment",cascade=CascadeType.ALL)
-	@JoinColumn(name="notification")
-	private PostNotification notification;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-	public Article getArticle() {
-		return article;
-	}
-	public void setArticle(Article article) {
-		this.article = article;
-	}
-	public UserBean getAuthor() {
-		return author;
-	}
-	public void setAuthor(UserBean author) {
-		this.author = author;
-	}
-	public Comment(Long id, Article article, UserBean author) {
-		super();
-		this.id = id;
-		this.article = article;
-		this.author = author;
-	}
-	public Comment() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+    @Column(nullable = false, length = 5000)
+    private String content;
 
-	public PostNotification getNotification() {
-		return notification;
-	}
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "article_id", nullable = false)
+    private Article article;
 
-	public void setNotification(PostNotification notification) {
-		this.notification = notification;
-	}
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "userbean_id", nullable = false)
+    private UserBean author;
 
-	public String getContent() {
-		return content;
-	}
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt = Instant.now();
 
-	public void setContent(String content) {
-		this.content = content;
-	}
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Article getArticle() {
+        return article;
+    }
+
+    public void setArticle(Article article) {
+        this.article = article;
+    }
+
+    public UserBean getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(UserBean author) {
+        this.author = author;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 }

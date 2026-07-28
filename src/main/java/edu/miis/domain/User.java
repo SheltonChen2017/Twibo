@@ -1,7 +1,6 @@
 package edu.miis.domain;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
 import java.time.Instant;
 
 @Entity
@@ -17,35 +16,24 @@ public class User {
     @Column(nullable = false, length = 100)
     private String passwordHash;
 
-    @Column(nullable = false)
-    private LocalDate birthday;
-
-    @Column(nullable = false, length = 120)
-    private String securityQuestion;
-
-    @Column(nullable = false, length = 100)
-    private String securityAnswerHash;
+    @Column(name = "security_answer_hash", nullable = false, length = 100)
+    private String recoveryPhraseHash;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
     protected User() {}
 
-    public User(String username, String passwordHash, LocalDate birthday,
-                String securityQuestion, String securityAnswerHash) {
+    public User(String username, String passwordHash, String recoveryPhraseHash) {
         this.username = username;
         this.passwordHash = passwordHash;
-        this.birthday = birthday;
-        this.securityQuestion = securityQuestion;
-        this.securityAnswerHash = securityAnswerHash;
+        this.recoveryPhraseHash = recoveryPhraseHash;
     }
 
     public Long getId() { return id; }
     public String getUsername() { return username; }
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
-    public LocalDate getBirthday() { return birthday; }
-    public String getSecurityQuestion() { return securityQuestion; }
-    public String getSecurityAnswerHash() { return securityAnswerHash; }
+    public String getRecoveryPhraseHash() { return recoveryPhraseHash; }
     public Instant getCreatedAt() { return createdAt; }
 }

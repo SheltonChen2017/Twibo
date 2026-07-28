@@ -1,8 +1,11 @@
 # Twibo
 
-Twibo is a small social blogging application originally built as a student project.
-It supports accounts, sign-in, password recovery, posts, comments, user search,
-profiles, following, and a personalized feed.
+Twibo is a small, focused social blogging application originally built as a
+student project. It supports accounts, sign-in, private-phrase password recovery,
+posts, comments, user search, profiles, following, and a paginated personal feed.
+
+The current version has a responsive, dependency-free interface and deliberately
+minimizes registration data: no email address or birthday is required.
 
 ## Requirements
 
@@ -54,5 +57,12 @@ instructions.
 
 ## Security note
 
-Passwords and recovery answers are stored as BCrypt hashes. The local H2 database,
-environment files, and build output are ignored by Git.
+Passwords and recovery phrases are stored as BCrypt hashes. Authentication and
+recovery use generic failure messages, constant-work hash checks, throttling, CSRF
+protection, session-ID rotation, short-lived recovery authorization, and a strict
+browser content policy. The local H2 database, environment files, and build output
+are ignored by Git.
+
+The built-in throttling is process-local and is suitable for a small single-instance
+deployment. A multi-replica public deployment should move rate-limit state to a
+shared edge, gateway, or store.

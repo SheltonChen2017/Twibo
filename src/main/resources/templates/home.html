@@ -1,9 +1,60 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
-</head><body><main class="shell hero">
-  <img th:src="@{/img/majorlogo.png}" alt="" width="120">
-  <h1>Twibo</h1><p>A tiny place to share thoughts and follow friends.</p>
-  <div class="actions"><a class="button" th:href="@{/signup}">Create account</a><a class="button secondary" th:href="@{/login}">Sign in</a></div>
-</main></body></html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Twibo is a calm, focused place to share thoughts and keep up with people you care about.">
+  <title>Twibo · Share the small moments</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div class="landing">
+  <header class="landing-header">
+    <a class="brand" th:href="@{/}" aria-label="Twibo home">
+      <span class="brand-mark" aria-hidden="true">T</span><span>Twibo</span>
+    </a>
+    <div class="actions">
+      <a class="button secondary" th:href="@{/login}">Sign in</a>
+      <a class="button" th:href="@{/signup}">Join Twibo</a>
+    </div>
+  </header>
+  <main id="main-content">
+    <section class="hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Small posts. Real connection.</p>
+        <h1>Share what matters, <span>without the noise.</span></h1>
+        <p>Twibo is a focused social space for everyday thoughts, good conversations, and the people you actually want to hear from.</p>
+        <div class="actions">
+          <a class="button" th:href="@{/signup}">Create your account</a>
+          <a class="button secondary" th:href="@{/login}">I already have one</a>
+        </div>
+      </div>
+      <div class="hero-preview" aria-label="Example Twibo feed">
+        <div class="preview-top"><span class="preview-dot" aria-hidden="true"></span><span class="preview-label">YOUR FEED</span></div>
+        <article class="mock-post">
+          <div class="post-header">
+            <span class="avatar" aria-hidden="true">M</span>
+            <div class="author-line"><strong>Maya</strong><div class="meta">a moment ago</div></div>
+          </div>
+          <p>Finally tried the little bakery around the corner. The cardamom buns absolutely live up to the hype.</p>
+        </article>
+        <article class="mock-post">
+          <div class="post-header">
+            <span class="avatar" aria-hidden="true">J</span>
+            <div class="author-line"><strong>Jon</strong><div class="meta">today</div></div>
+          </div>
+          <p>Three pages into a new sketchbook. It feels good to make something imperfect again.</p>
+        </article>
+      </div>
+    </section>
+    <section class="feature-strip" aria-label="Why Twibo">
+      <div class="feature"><strong>Simple by design</strong><span>Posts, replies, and people—nothing fighting for your attention.</span></div>
+      <div class="feature"><strong>Your people first</strong><span>Your feed is built from the accounts you choose to follow.</span></div>
+      <div class="feature"><strong>Private details minimized</strong><span>Sign up without handing over a birthday or email address.</span></div>
+    </section>
+  </main>
+  <footer class="landing-footer">Twibo · A quieter place to keep in touch.</footer>
+</div>
+</body>
+</html>

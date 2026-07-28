@@ -3,12 +3,18 @@ package edu.miis.service;
 import edu.miis.domain.*;
 import edu.miis.repository.*;
 import edu.miis.web.SignupForm;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -18,6 +24,7 @@ public class TwiboService {
     private final CommentRepository comments;
     private final FollowRepository follows;
     private final PasswordEncoder encoder;
+    private final String dummyPasswordHash;
 
     public TwiboService(UserRepository users, PostRepository posts, CommentRepository comments,
                         FollowRepository follows, PasswordEncoder encoder) {
@@ -26,6 +33,7 @@ public class TwiboService {
         this.comments = comments;
         this.follows = follows;
         this.encoder = encoder;
+        this.dummyPasswordHash = encoder.encode(UUID.randomUUID().toString());
     }
 
     public User register(SignupForm form) {
@@ -33,19 +41,34 @@ public class TwiboService {
         if (users.existsByUsernameIgnoreCase(username)) {
             throw new IllegalArgumentException("That username is already taken.");
         }
-        return users.save(new User(username, encoder.encode(form.getPassword()), form.getBirthday(),
-                form.getSecurityQuestion().trim(), encoder.encode(normalizeAnswer(form.getSecurityAnswer()))));
+        String password = validatedPassword(form.getPassword());
+        return users.save(new User(username, encoder.encode(password),
+                encoder.encode(validatedRecoveryPhrase(form.getRecoveryPhrase()))));
     }
 
     @Transactional(readOnly = true)
     public Optional<User> authenticate(String username, String password) {
-        return users.findByUsernameIgnoreCase(username.trim())
-                .filter(user -> encoder.matches(password, user.getPasswordHash()));
+        String normalized = normalizedUsername(username);
+        Optional<User> user = normalized.length() <= 30
+                ? users.findByUsernameIgnoreCase(normalized)
+                : Optional.empty();
+        String passwordHash = user.map(User::getPasswordHash).orElse(dummyPasswordHash);
+        boolean validLength = fitsBcrypt(password);
+        boolean matches = encoder.matches(validLength ? password : "invalid-over-limit", passwordHash);
+        return validLength && matches ? user : Optional.empty();
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> findUser(String username) {
-        return users.findByUsernameIgnoreCase(username.trim());
+    public Optional<User> verifyRecoveryPhrase(String username, String phrase) {
+        String normalizedUsername = normalizedUsername(username);
+        Optional<User> user = normalizedUsername.length() <= 30
+                ? users.findByUsernameIgnoreCase(normalizedUsername)
+                : Optional.empty();
+        String answerHash = user.map(User::getRecoveryPhraseHash).orElse(dummyPasswordHash);
+        String normalizedPhrase = normalizeAnswer(phrase);
+        boolean validLength = fitsBcrypt(normalizedPhrase);
+        boolean matches = encoder.matches(validLength ? normalizedPhrase : "invalid-over-limit", answerHash);
+        return validLength && matches ? user : Optional.empty();
     }
 
     @Transactional(readOnly = true)
@@ -59,17 +82,26 @@ public class TwiboService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> feed(Long userId) { return posts.findFeed(userId); }
+    public Page<Post> feed(Long userId, int page) {
+        return posts.findFeed(userId, PageRequest.of(safePage(page), 20,
+                Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
 
     @Transactional(readOnly = true)
-    public List<Post> postsBy(Long userId) { return posts.findByAuthorIdOrderByCreatedAtDesc(userId); }
+    public Page<Post> postsBy(Long userId, int page) {
+        return posts.findByAuthorIdOrderByCreatedAtDesc(userId, PageRequest.of(safePage(page), 20));
+    }
 
     @Transactional(readOnly = true)
     public List<Comment> commentsFor(Long postId) { return comments.findByPostIdOrderByCreatedAtAsc(postId); }
 
     @Transactional(readOnly = true)
     public List<User> search(String query) {
-        return users.findTop20ByUsernameContainingIgnoreCaseOrderByUsernameAsc(query.trim());
+        String value = query == null ? "" : query.trim();
+        if (value.length() > 50) {
+            throw new IllegalArgumentException("Search terms must be 50 characters or fewer.");
+        }
+        return users.findTop20ByUsernameContainingIgnoreCaseOrderByUsernameAsc(value);
     }
 
     public Post publish(Long userId, String content) {
@@ -99,16 +131,8 @@ public class TwiboService {
         return follows.existsByFollowerIdAndFollowedId(followerId, followedId);
     }
 
-    @Transactional(readOnly = true)
-    public boolean verifyRecoveryAnswer(User user, String answer) {
-        return encoder.matches(normalizeAnswer(answer), user.getSecurityAnswerHash());
-    }
-
     public void resetPassword(Long userId, String password) {
-        if (password == null || password.length() < 8 || password.length() > 72) {
-            throw new IllegalArgumentException("Password must contain 8–72 characters.");
-        }
-        requireUser(userId).setPasswordHash(encoder.encode(password));
+        requireUser(userId).setPasswordHash(encoder.encode(validatedPassword(password)));
     }
 
     private String validatedText(String text, int max, String label) {
@@ -120,5 +144,34 @@ public class TwiboService {
 
     private String normalizeAnswer(String answer) {
         return answer == null ? "" : answer.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizedUsername(String username) {
+        return username == null ? "" : username.trim();
+    }
+
+    private String validatedPassword(String password) {
+        if (password == null || password.length() < 8 || !fitsBcrypt(password)) {
+            throw new IllegalArgumentException("Password must contain 8-72 characters and fit within 72 bytes.");
+        }
+        return password;
+    }
+
+    private String validatedRecoveryPhrase(String phrase) {
+        String normalized = normalizeAnswer(phrase);
+        if (normalized.length() < 8 || !fitsBcrypt(normalized)) {
+            throw new IllegalArgumentException(
+                    "Recovery phrase must contain 8-72 characters and fit within 72 bytes.");
+        }
+        return normalized;
+    }
+
+    private boolean fitsBcrypt(String value) {
+        return value != null && value.length() <= 72
+                && value.getBytes(StandardCharsets.UTF_8).length <= 72;
+    }
+
+    private int safePage(int page) {
+        return Math.max(0, Math.min(page, 500));
     }
 }

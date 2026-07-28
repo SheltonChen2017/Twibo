@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Page not found · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<main id="main-content" class="auth-page">
+  <div class="auth-wrap">
+    <a class="brand auth-brand" th:href="@{/}"><span class="brand-mark" aria-hidden="true">T</span><span>Twibo</span></a>
+    <section class="card auth-card error-page">
+      <p class="error-code" th:text="${status == 404} ? '404 · NOT FOUND' : 'SOMETHING WENT WRONG'"></p>
+      <h1 th:text="${status == 404} ? 'That page wandered off.' : 'We hit an unexpected snag.'"></h1>
+      <p th:text="${status == 404} ? 'The link may be old, or the page may never have existed.' : 'Please try again in a moment.'"></p>
+      <a class="button" th:href="${session.userId != null} ? @{/feed} : @{/}">Go somewhere familiar</a>
+    </section>
+  </div>
+</main>
+</body>
+</html>

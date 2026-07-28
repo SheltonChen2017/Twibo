@@ -1,15 +1,46 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Conversation · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
-</head><body><nav th:replace="~{fragments :: nav}"></nav><main class="shell">
-  <p class="error" th:if="${error}" th:text="${error}"></p>
-  <article class="card"><div class="meta"><a th:href="@{/users/{id}(id=${post.author.id})}" th:text="${post.author.username}"></a>
-    · <time th:text="${#temporals.format(post.createdAt, 'MMM d, yyyy h:mm a')}"></time></div><p class="content" th:text="${post.content}"></p></article>
-  <section class="card"><h2>Replies</h2>
-    <form class="stack" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post"><textarea name="content" maxlength="500" required></textarea><button>Reply</button></form>
-    <div class="comment" th:each="comment : ${comments}"><div class="meta"><a th:href="@{/users/{id}(id=${comment.author.id})}" th:text="${comment.author.username}"></a>
-      · <time th:text="${#temporals.format(comment.createdAt, 'MMM d, yyyy h:mm a')}"></time></div><p class="content" th:text="${comment.content}"></p></div>
-    <p th:if="${#lists.isEmpty(comments)}">No replies yet.</p>
+</head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main id="main-content" class="shell">
+  <div class="page-heading"><p><a th:href="@{/feed}">← Back to feed</a></p><h1>Conversation</h1></div>
+  <div class="alert error" role="alert" th:if="${error}" th:text="${error}"></div>
+  <article class="card post-card">
+    <div class="post-header">
+      <span class="avatar" aria-hidden="true" th:text="${#strings.substring(post.author.username,0,1)}"></span>
+      <div class="author-line">
+        <a th:href="@{/users/{id}(id=${post.author.id})}" th:text="${post.author.username}"></a>
+        <div class="meta"><time th:attr="datetime=${post.createdAt}" th:text="${#temporals.format(post.createdAt, 'MMM d, yyyy · h:mm a')}"></time></div>
+      </div>
+    </div>
+    <p class="content" th:text="${post.content}"></p>
+  </article>
+  <section class="card">
+    <h2>Join the conversation</h2>
+    <form class="stack" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post">
+      <div class="field">
+        <label class="sr-only" for="reply">Write a reply</label>
+        <textarea id="reply" name="content" maxlength="500" required aria-describedby="reply-hint" placeholder="Write a thoughtful reply…"></textarea>
+        <span class="hint" id="reply-hint">Up to 500 characters.</span>
+      </div>
+      <div class="form-actions"><button type="submit">Reply</button></div>
+    </form>
+    <div class="comment" th:each="comment : ${comments}">
+      <div class="post-header">
+        <span class="avatar" aria-hidden="true" th:text="${#strings.substring(comment.author.username,0,1)}"></span>
+        <div class="author-line">
+          <a th:href="@{/users/{id}(id=${comment.author.id})}" th:text="${comment.author.username}"></a>
+          <div class="meta"><time th:attr="datetime=${comment.createdAt}" th:text="${#temporals.format(comment.createdAt, 'MMM d, yyyy · h:mm a')}"></time></div>
+        </div>
+      </div>
+      <p class="content" th:text="${comment.content}"></p>
+    </div>
+    <div class="empty" th:if="${#lists.isEmpty(comments)}"><strong>No replies yet.</strong><span>You can be the first to respond.</span></div>
   </section>
-</main></body></html>
+</main>
+</body>
+</html>

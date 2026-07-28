@@ -1,14 +1,24 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav th:fragment="nav">
-  <div class="shell">
-    <a class="brand" th:href="@{/feed}">Twibo</a>
-    <a th:href="@{/feed}">Feed</a>
-    <a th:href="@{/users/{id}(id=${session.userId})}">Profile</a>
-    <form th:action="@{/search}" method="get"><input name="q" placeholder="Find people" aria-label="Find people"></form>
-    <form th:action="@{/logout}" method="post"><button class="secondary" type="submit">Log out</button></form>
-  </div>
-</nav>
+<header class="site-header" th:fragment="nav">
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <nav class="nav-shell" aria-label="Primary navigation">
+    <a class="brand" th:href="@{/feed}" aria-label="Twibo feed">
+      <span class="brand-mark" aria-hidden="true">T</span><span>Twibo</span>
+    </a>
+    <div class="nav-links">
+      <a th:href="@{/feed}">Feed</a>
+      <a th:href="@{/users/{id}(id=${session.userId})}">Profile</a>
+    </div>
+    <form class="nav-search" th:action="@{/search}" method="get" role="search">
+      <label class="sr-only" for="nav-search">Find people</label>
+      <input id="nav-search" name="q" maxlength="50" placeholder="Find people">
+    </form>
+    <form class="nav-logout" th:action="@{/logout}" method="post">
+      <button class="ghost" type="submit">Log out</button>
+    </form>
+  </nav>
+</header>
 </body>
 </html>

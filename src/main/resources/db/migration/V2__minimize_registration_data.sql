@@ -1,0 +1,2 @@
+ALTER TABLE app_user MODIFY COLUMN birthday DATE NULL;
+ALTER TABLE app_user MODIFY COLUMN security_question VARCHAR(120) NULL;

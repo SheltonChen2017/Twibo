@@ -1,17 +1,44 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Your feed · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
-</head><body><nav th:replace="~{fragments :: nav}"></nav><main class="shell">
-  <p class="error" th:if="${error}" th:text="${error}"></p>
-  <section class="card"><h1 th:text="|Hello, ${currentUser.username}|"></h1>
-    <form class="stack" th:action="@{/posts}" method="post"><label for="content">Share something</label>
-      <textarea id="content" name="content" maxlength="1000" required></textarea><button type="submit">Post</button></form>
+</head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main id="main-content" class="shell">
+  <div class="alert error" role="alert" th:if="${error}" th:text="${error}"></div>
+  <section class="card composer">
+    <h1 th:text="|Good to see you, ${currentUser.username}.|"></h1>
+    <form class="stack" th:action="@{/posts}" method="post">
+      <div class="field">
+        <label for="content">What would you like to share?</label>
+        <textarea id="content" name="content" maxlength="1000" required aria-describedby="post-hint" placeholder="A thought, an update, something worth remembering…"></textarea>
+        <span class="hint" id="post-hint">Up to 1,000 characters.</span>
+      </div>
+      <div class="form-actions"><button type="submit">Publish post</button></div>
+    </form>
   </section>
-  <section class="card" th:each="post : ${posts}">
-    <div class="meta"><a th:href="@{/users/{id}(id=${post.author.id})}" th:text="${post.author.username}"></a>
-      · <time th:text="${#temporals.format(post.createdAt, 'MMM d, yyyy h:mm a')}"></time></div>
-    <p class="content" th:text="${post.content}"></p><a th:href="@{/posts/{id}(id=${post.id})}">View conversation</a>
+  <article class="card post-card" th:each="post : ${posts}">
+    <div class="post-header">
+      <span class="avatar" aria-hidden="true" th:text="${#strings.substring(post.author.username,0,1)}"></span>
+      <div class="author-line">
+        <a th:href="@{/users/{id}(id=${post.author.id})}" th:text="${post.author.username}"></a>
+        <div class="meta"><time th:attr="datetime=${post.createdAt}" th:text="${#temporals.format(post.createdAt, 'MMM d, yyyy · h:mm a')}"></time></div>
+      </div>
+    </div>
+    <p class="content" th:text="${post.content}"></p>
+    <a class="post-link" th:href="@{/posts/{id}(id=${post.id})}">View conversation</a>
+  </article>
+  <section class="card empty" th:if="${#lists.isEmpty(posts)}">
+    <strong>Your feed is quiet—for now.</strong>
+    <span>Share the first post or <a th:href="@{/search}">find someone to follow</a>.</span>
   </section>
-  <section class="card" th:if="${#lists.isEmpty(posts)}"><p>Your feed is quiet. Publish the first post or search for someone to follow.</p></section>
-</main></body></html>
+  <nav class="pagination" aria-label="Feed pages" th:if="${postPage.totalPages > 1}">
+    <a class="button secondary" th:if="${postPage.hasPrevious()}" th:href="@{/feed(page=${postPage.number - 1})}">← Newer</a><span th:unless="${postPage.hasPrevious()}"></span>
+    <span class="meta" th:text="|Page ${postPage.number + 1} of ${postPage.totalPages}|"></span>
+    <a class="button secondary" th:if="${postPage.hasNext()}" th:href="@{/feed(page=${postPage.number + 1})}">Older →</a><span th:unless="${postPage.hasNext()}"></span>
+  </nav>
+</main>
+</body>
+</html>

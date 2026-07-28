@@ -43,16 +43,23 @@ Java 21 application that runs locally without infrastructure.
   through environment variables.
 - Removed all hard-coded credentials.
 - Added BCrypt hashing for passwords and recovery answers.
-- Added validation, case-insensitive account lookup, safe not-found handling, and
-  transactional service boundaries.
+- Added validation, case-insensitive account lookup, friendly not-found handling,
+  bounded pagination, and transactional service boundaries.
 - Added session authentication, session-ID rotation after login, protected routes,
   POST-only mutations, SameSite/HttpOnly cookies, and CSRF protection.
+- Added generic constant-work credential checks, login/recovery throttling,
+  short-lived recovery authorization, a restrictive content security policy, and
+  tighter request/session limits.
+- Reduced registration data collection by removing birthday, email, and public
+  security-question prompts. Recovery now uses one private hashed phrase without
+  revealing whether an account exists.
 - Implemented registration, login/logout, recovery/reset, publishing, commenting,
-  search, profiles, follow/unfollow, and personalized feeds.
+  bounded search, profiles, follow/unfollow, and paginated personalized feeds.
 - Removed dangerous eager/cascading graphs and explicitly fetch only data each view
   needs.
-- Replaced obsolete templates and remote frontend dependencies with responsive local
-  HTML/CSS while retaining the original image assets.
+- Replaced obsolete templates and remote frontend dependencies with a polished,
+  responsive local design, clearer empty/error states, keyboard focus treatments,
+  reduced-motion support, and more semantic accessible markup.
 - Added integration tests covering startup, route protection, CSRF, account creation,
   publishing, feed rendering, commenting, and conversation rendering.
 - Rewrote the README with current run and database instructions.
@@ -60,7 +67,7 @@ Java 21 application that runs locally without infrastructure.
 ## Verification
 
 - `mvnw package`: successful
-- Automated tests: 4 passed, 0 failed
+- Automated tests: 10 passed, 0 failed
 - Executable JAR created: `target/twibo-1.0.0-SNAPSHOT.jar`
 - Runtime smoke test with the persistent H2 database: successful
 - `GET /`: HTTP 200
@@ -72,9 +79,12 @@ Java 21 application that runs locally without infrastructure.
 This is now a functional local application, not a production-scale social network.
 Before public deployment:
 
-- Replace security-question recovery with time-limited email recovery tokens.
-- Add rate limiting for login, recovery, posting, and search.
-- Add feed pagination and database indexes based on measured query plans.
+- For a public multi-replica deployment, replace the process-local authentication
+  throttle with a shared edge/gateway limiter.
+- For higher assurance, replace recovery phrases with time-limited email tokens or
+  passkeys and add multi-factor authentication.
+- Add rate limiting for posting and search based on real traffic patterns.
+- Review database indexes against measured production query plans.
 - Use Flyway or Liquibase migrations instead of Hibernate schema updates.
 - Configure HTTPS, secure cookies, proxy headers, centralized logs, monitoring,
   backups, and a managed database.

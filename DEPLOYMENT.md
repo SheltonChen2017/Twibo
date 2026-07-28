@@ -149,5 +149,7 @@ instance role permission to read only the specific database secret.
 - Configure database backups and point-in-time recovery.
 - Forward application logs to the provider logging service and add alerts for
   failed health checks and elevated HTTP 5xx rates.
+- Put public multi-replica deployments behind shared gateway or edge rate limiting;
+  the application's built-in authentication throttle is intentionally process-local.
 - Build a new immutable image tag for every release; do not deploy `latest`.
 - Test migrations against a restored database backup before important releases.

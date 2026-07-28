@@ -1,14 +1,36 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title th:text="|${profile.username} · Twibo|"></title><link rel="stylesheet" th:href="@{/css/app.css}">
-</head><body><nav th:replace="~{fragments :: nav}"></nav><main class="shell">
-  <p class="error" th:if="${error}" th:text="${error}"></p><p class="message" th:if="${message}" th:text="${message}"></p>
-  <section class="card"><h1 th:text="${profile.username}"></h1><p class="meta" th:text="|Joined ${#temporals.format(profile.createdAt, 'MMMM yyyy')}|"></p>
+</head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+<main id="main-content" class="shell">
+  <div class="alert error" role="alert" th:if="${error}" th:text="${error}"></div>
+  <div class="alert message" role="status" th:if="${message}" th:text="${message}"></div>
+  <section class="card profile-card">
+    <span class="avatar" aria-hidden="true" th:text="${#strings.substring(profile.username,0,1)}"></span>
+    <div class="profile-copy">
+      <h1 th:text="${profile.username}"></h1>
+      <p class="meta" th:text="|Joined ${#temporals.format(profile.createdAt, 'MMMM yyyy')}|"></p>
+    </div>
     <form th:unless="${ownProfile}" th:action="@{/users/{id}/follow(id=${profile.id})}" method="post">
-      <button th:text="${following} ? 'Unfollow' : 'Follow'"></button></form>
+      <button th:classappend="${following} ? 'secondary'" th:text="${following} ? 'Following · Unfollow' : 'Follow'"></button>
+    </form>
   </section>
-  <article class="card" th:each="post : ${posts}"><div class="meta" th:text="${#temporals.format(post.createdAt, 'MMM d, yyyy h:mm a')}"></div>
-    <p class="content" th:text="${post.content}"></p><a th:href="@{/posts/{id}(id=${post.id})}">View conversation</a></article>
-  <section class="card" th:if="${#lists.isEmpty(posts)}"><p>No posts yet.</p></section>
-</main></body></html>
+  <div class="page-heading"><h2 th:text="${ownProfile} ? 'Your posts' : 'Recent posts'"></h2></div>
+  <article class="card post-card" th:each="post : ${posts}">
+    <div class="meta"><time th:attr="datetime=${post.createdAt}" th:text="${#temporals.format(post.createdAt, 'MMM d, yyyy · h:mm a')}"></time></div>
+    <p class="content" th:text="${post.content}"></p>
+    <a class="post-link" th:href="@{/posts/{id}(id=${post.id})}">View conversation</a>
+  </article>
+  <section class="card empty" th:if="${#lists.isEmpty(posts)}"><strong>No posts yet.</strong><span th:text="${ownProfile} ? 'When you publish, your posts will appear here.' : 'Check back another time.'"></span></section>
+  <nav class="pagination" aria-label="Profile post pages" th:if="${postPage.totalPages > 1}">
+    <a class="button secondary" th:if="${postPage.hasPrevious()}" th:href="@{/users/{id}(id=${profile.id},page=${postPage.number - 1})}">← Newer</a><span th:unless="${postPage.hasPrevious()}"></span>
+    <span class="meta" th:text="|Page ${postPage.number + 1} of ${postPage.totalPages}|"></span>
+    <a class="button secondary" th:if="${postPage.hasNext()}" th:href="@{/users/{id}(id=${profile.id},page=${postPage.number + 1})}">Older →</a><span th:unless="${postPage.hasNext()}"></span>
+  </nav>
+</main>
+</body>
+</html>

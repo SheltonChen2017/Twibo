@@ -1,15 +1,14 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<form th:object="${user}" th:action="@{/loginto}" method="post">
-username: <input type="text" th:field="*{username}" placeholder="username"/>
-password: <input type="password" th:field="*{password}" placeholder="password"/>
-
-    <input type="submit" value="submitInfo">
-</form>
-</body>
-</html>
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign in · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head><body><main class="shell"><section class="card">
+  <h1>Welcome back</h1>
+  <p class="error" th:if="${error}" th:text="${error}"></p><p class="message" th:if="${message}" th:text="${message}"></p>
+  <form class="stack" th:action="@{/login}" method="post">
+    <label>Username<input name="username" required autocomplete="username"></label>
+    <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
+    <button type="submit">Sign in</button>
+  </form>
+  <p><a th:href="@{/recover}">Forgot password?</a> · <a th:href="@{/signup}">Create account</a></p>
+</section></main></body></html>

@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Search · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head><body><nav th:replace="~{fragments :: nav}"></nav><main class="shell"><section class="card">
+  <h1>Find people</h1><form class="stack" th:action="@{/search}" method="get"><input name="q" th:value="${q}" required placeholder="Username"><button>Search</button></form>
+</section><section class="card" th:each="user : ${users}"><a th:href="@{/users/{id}(id=${user.id})}" th:text="${user.username}"></a></section>
+<section class="card" th:if="${!#strings.isEmpty(q) and #lists.isEmpty(users)}">No matching people.</section>
+</main></body></html>

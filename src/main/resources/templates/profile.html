@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title th:text="|${profile.username} · Twibo|"></title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head><body><nav th:replace="~{fragments :: nav}"></nav><main class="shell">
+  <p class="error" th:if="${error}" th:text="${error}"></p><p class="message" th:if="${message}" th:text="${message}"></p>
+  <section class="card"><h1 th:text="${profile.username}"></h1><p class="meta" th:text="|Joined ${#temporals.format(profile.createdAt, 'MMMM yyyy')}|"></p>
+    <form th:unless="${ownProfile}" th:action="@{/users/{id}/follow(id=${profile.id})}" method="post">
+      <button th:text="${following} ? 'Unfollow' : 'Follow'"></button></form>
+  </section>
+  <article class="card" th:each="post : ${posts}"><div class="meta" th:text="${#temporals.format(post.createdAt, 'MMM d, yyyy h:mm a')}"></div>
+    <p class="content" th:text="${post.content}"></p><a th:href="@{/posts/{id}(id=${post.id})}">View conversation</a></article>
+  <section class="card" th:if="${#lists.isEmpty(posts)}"><p>No posts yet.</p></section>
+</main></body></html>

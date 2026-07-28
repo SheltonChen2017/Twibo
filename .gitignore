@@ -1,4 +1,11 @@
 /target/
+/.m2/
+/data/
+*.mv.db
+*.trace.db
+.env
+.env.*
+!.env.example
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###

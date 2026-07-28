@@ -1,0 +1,32 @@
+services:
+  database:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: twibo
+      MYSQL_USER: twibo
+      MYSQL_PASSWORD: local-development-only
+      MYSQL_ROOT_PASSWORD: local-root-development-only
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-plocal-root-development-only"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: jdbc:mysql://database:3306/twibo?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DATABASE_USERNAME: twibo
+      DATABASE_PASSWORD: local-development-only
+      # The local rehearsal uses HTTP. Cloud deployments keep the production default (true).
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: "false"
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  mysql-data:

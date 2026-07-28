@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Recover account · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head><body><main class="shell"><section class="card"><h1>Recover your account</h1>
+  <p class="error" th:if="${error}" th:text="${error}"></p>
+  <form class="stack" th:action="@{/recover/question}" method="post"><label>Username<input name="username" required></label><button>Continue</button></form>
+  <p><a th:href="@{/login}">Back to sign in</a></p>
+</section></main></body></html>

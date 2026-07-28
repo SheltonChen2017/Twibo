@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Conversation · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head><body><nav th:replace="~{fragments :: nav}"></nav><main class="shell">
+  <p class="error" th:if="${error}" th:text="${error}"></p>
+  <article class="card"><div class="meta"><a th:href="@{/users/{id}(id=${post.author.id})}" th:text="${post.author.username}"></a>
+    · <time th:text="${#temporals.format(post.createdAt, 'MMM d, yyyy h:mm a')}"></time></div><p class="content" th:text="${post.content}"></p></article>
+  <section class="card"><h2>Replies</h2>
+    <form class="stack" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post"><textarea name="content" maxlength="500" required></textarea><button>Reply</button></form>
+    <div class="comment" th:each="comment : ${comments}"><div class="meta"><a th:href="@{/users/{id}(id=${comment.author.id})}" th:text="${comment.author.username}"></a>
+      · <time th:text="${#temporals.format(comment.createdAt, 'MMM d, yyyy h:mm a')}"></time></div><p class="content" th:text="${comment.content}"></p></div>
+    <p th:if="${#lists.isEmpty(comments)}">No replies yet.</p>
+  </section>
+</main></body></html>

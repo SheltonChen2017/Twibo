@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Recovery question · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head><body><main class="shell"><section class="card"><h1>Recovery question</h1>
+  <p class="error" th:if="${error}" th:text="${error}"></p><p th:text="${question}"></p>
+  <form class="stack" th:action="@{/recover/verify}" method="post"><label>Answer<input type="password" name="answer" required></label><button>Verify</button></form>
+</section></main></body></html>

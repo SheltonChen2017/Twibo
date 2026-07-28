@@ -1,0 +1,11 @@
+.git
+.github
+.idea
+.m2
+data
+target
+*.iml
+*.log
+.env
+.env.*
+PROJECT_REVIEW.md

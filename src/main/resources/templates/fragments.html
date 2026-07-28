@@ -1,0 +1,14 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="nav">
+  <div class="shell">
+    <a class="brand" th:href="@{/feed}">Twibo</a>
+    <a th:href="@{/feed}">Feed</a>
+    <a th:href="@{/users/{id}(id=${session.userId})}">Profile</a>
+    <form th:action="@{/search}" method="get"><input name="q" placeholder="Find people" aria-label="Find people"></form>
+    <form th:action="@{/logout}" method="post"><button class="secondary" type="submit">Log out</button></form>
+  </div>
+</nav>
+</body>
+</html>

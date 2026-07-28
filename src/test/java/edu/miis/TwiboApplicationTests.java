@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.mock.web.MockHttpSession;
+import jakarta.servlet.http.Cookie;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -33,27 +33,28 @@ class TwiboApplicationTests {
     @Test
     @DirtiesContext
     void accountPostAndCommentFlowWorks() throws Exception {
-        MockHttpSession session = new MockHttpSession();
-        mvc.perform(post("/signup").with(csrf()).session(session)
+        var signupResult = mvc.perform(post("/signup").with(csrf())
                         .param("username", "student_user")
                         .param("password", "correct-horse-battery")
                         .param("birthday", "2000-01-01")
                         .param("securityQuestion", "First pet?")
                         .param("securityAnswer", "Mochi"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/feed"));
+                .andExpect(redirectedUrl("/feed"))
+                .andReturn();
+        Cookie sessionCookie = signupResult.getResponse().getCookie("SESSION");
 
-        mvc.perform(post("/posts").with(csrf()).session(session).param("content", "My first repaired post"))
+        mvc.perform(post("/posts").with(csrf()).cookie(sessionCookie).param("content", "My first repaired post"))
                 .andExpect(status().is3xxRedirection());
 
-        mvc.perform(get("/feed").session(session))
+        mvc.perform(get("/feed").cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("My first repaired post")));
 
-        mvc.perform(post("/posts/1/comments").with(csrf()).session(session).param("content", "It works!"))
+        mvc.perform(post("/posts/1/comments").with(csrf()).cookie(sessionCookie).param("content", "It works!"))
                 .andExpect(status().is3xxRedirection());
 
-        mvc.perform(get("/posts/1").session(session))
+        mvc.perform(get("/posts/1").cookie(sessionCookie))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("It works!")));
     }
@@ -62,5 +63,12 @@ class TwiboApplicationTests {
     void csrfProtectsStateChangingRequests() throws Exception {
         mvc.perform(post("/login").param("username", "nobody").param("password", "nothing"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void readinessEndpointIsAvailableToCloudProbes() throws Exception {
+        mvc.perform(get("/actuator/health/readiness"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
     }
 }

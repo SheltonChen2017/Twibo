@@ -23,6 +23,16 @@ Run tests with:
 .\mvnw.cmd test
 ```
 
+## Run with containers
+
+To rehearse the production setup with MySQL:
+
+```powershell
+docker compose up --build
+```
+
+Open <http://localhost:8080>.
+
 ## Optional MySQL configuration
 
 Set these environment variables before starting:
@@ -33,8 +43,14 @@ $env:DATABASE_USERNAME = "twibo"
 $env:DATABASE_PASSWORD = "replace-me"
 ```
 
-Hibernate creates or updates the tables. Use a dedicated database account rather
-than the MySQL root account.
+Use a dedicated database account rather than the MySQL root account.
+
+## Deploy
+
+The repository includes a non-root multi-stage container image, production
+configuration, Flyway migrations, health endpoints, and CI. See
+[DEPLOYMENT.md](DEPLOYMENT.md) for Azure Container Apps and AWS App Runner
+instructions.
 
 ## Security note
 

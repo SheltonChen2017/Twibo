@@ -170,8 +170,10 @@ public class TwiboController {
     }
 
     private void signIn(HttpServletRequest request, User user) {
-        request.changeSessionId();
-        HttpSession session = request.getSession();
+        if (request.getSession(false) != null) {
+            request.changeSessionId();
+        }
+        HttpSession session = request.getSession(true);
         session.setAttribute("userId", user.getId());
         session.setAttribute("username", user.getUsername());
     }

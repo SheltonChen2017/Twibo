@@ -16,6 +16,10 @@ replicas without load-balancer session affinity.
 | `PORT` | No | HTTP port, default `8080` |
 | `DATABASE_POOL_SIZE` | No | Maximum DB connections per replica, default `10` |
 | `JAVA_TOOL_OPTIONS` | No | Additional JVM flags |
+| `TRADING_AGENT_BASE_URL` | No | Future private Trading Agent API origin |
+| `TRADING_AGENT_API_TOKEN` | With URL | Shared bearer token; inject from a secret store |
+| `TRADING_AGENT_CONNECT_TIMEOUT` | No | Agent connection timeout, default `2s` |
+| `TRADING_AGENT_READ_TIMEOUT` | No | Agent response timeout, default `8s` |
 
 Example JDBC URL:
 
@@ -82,6 +86,8 @@ Create or update a Container App with:
 - Plain environment values: `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`,
   `DATABASE_USERNAME`
 - Secret-backed environment value: `DATABASE_PASSWORD`
+- Optional secret-backed value: `TRADING_AGENT_API_TOKEN`
+- Optional plain value: `TRADING_AGENT_BASE_URL` (prefer private HTTPS ingress)
 
 Example environment values:
 
@@ -134,6 +140,8 @@ In App Runner, create an image-based service and configure:
 - VPC connector: the connector that can reach RDS
 - Plain values: `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAME`
 - Secret reference: `DATABASE_PASSWORD`
+- Optional secret reference: `TRADING_AGENT_API_TOKEN`
+- Optional plain value: `TRADING_AGENT_BASE_URL` (prefer private HTTPS ingress)
 
 App Runner supplies `PORT`; do not create a custom variable named `PORT`.
 Grant the App Runner access role permission to pull the ECR image and grant its
@@ -151,3 +159,7 @@ instance role permission to read only the specific database secret.
   failed health checks and elevated HTTP 5xx rates.
 - Build a new immutable image tag for every release; do not deploy `latest`.
 - Test migrations against a restored database backup before important releases.
+- Keep Trading Agent on private networking where possible. Its Twibo-facing API
+  must remain read-only and must never return approval phrases or broker secrets.
+- The current branch does not perform Alpaca OAuth or store OAuth tokens. Do not
+  manually insert a `CONNECTED` broker record to bypass that unfinished flow.

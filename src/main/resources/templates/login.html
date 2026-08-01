@@ -4,6 +4,9 @@
   <title>Sign in · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
 </head><body><main class="shell"><section class="card">
   <h1>Welcome back</h1>
+  <p class="error" th:if="${param.error}">Incorrect username or password.</p>
+  <p class="message" th:if="${param.registered}">Account created. Sign in to continue.</p>
+  <p class="message" th:if="${param.logout}">You have signed out.</p>
   <p class="error" th:if="${error}" th:text="${error}"></p><p class="message" th:if="${message}" th:text="${message}"></p>
   <form class="stack" th:action="@{/login}" method="post">
     <label>Username<input name="username" required autocomplete="username"></label>

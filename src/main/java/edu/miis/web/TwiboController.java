@@ -2,7 +2,8 @@ package edu.miis.web;
 
 import edu.miis.domain.User;
 import edu.miis.service.TwiboService;
-import jakarta.servlet.http.HttpServletRequest;
+import edu.miis.service.BrokerConnectionService;
+import edu.miis.trading.TradingAgentClient;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -14,8 +15,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class TwiboController {
     private final TwiboService service;
+    private final TradingAgentClient tradingAgentClient;
+    private final BrokerConnectionService brokerConnections;
 
-    public TwiboController(TwiboService service) { this.service = service; }
+    public TwiboController(TwiboService service, TradingAgentClient tradingAgentClient,
+                           BrokerConnectionService brokerConnections) {
+        this.service = service;
+        this.tradingAgentClient = tradingAgentClient;
+        this.brokerConnections = brokerConnections;
+    }
 
     @GetMapping("/")
     String home(HttpSession session) {
@@ -30,12 +38,11 @@ public class TwiboController {
 
     @PostMapping("/signup")
     String signup(@Valid @ModelAttribute SignupForm signupForm, BindingResult errors,
-                  HttpServletRequest request, Model model) {
+                  Model model) {
         if (errors.hasErrors()) return "signup";
         try {
-            User user = service.register(signupForm);
-            signIn(request, user);
-            return "redirect:/feed";
+            service.register(signupForm);
+            return "redirect:/login?registered";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
             return "signup";
@@ -44,24 +51,6 @@ public class TwiboController {
 
     @GetMapping("/login")
     String login() { return "login"; }
-
-    @PostMapping("/login")
-    String login(@RequestParam String username, @RequestParam String password,
-                 HttpServletRequest request, Model model) {
-        return service.authenticate(username, password).map(user -> {
-            signIn(request, user);
-            return "redirect:/feed";
-        }).orElseGet(() -> {
-            model.addAttribute("error", "Incorrect username or password.");
-            return "login";
-        });
-    }
-
-    @PostMapping("/logout")
-    String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
-    }
 
     @GetMapping("/feed")
     String feed(HttpSession session, Model model) {
@@ -122,6 +111,23 @@ public class TwiboController {
         return "search";
     }
 
+    @GetMapping("/trading")
+    String trading(HttpSession session, Model model) {
+        Long currentUserId = userId(session);
+        model.addAttribute("currentUser", service.requireUser(currentUserId));
+        model.addAttribute("trading", tradingAgentClient.loadDashboard(
+                currentUserId, brokerConnections.hasConnectedPaperAlpaca(currentUserId)));
+        return "trading";
+    }
+
+    @GetMapping("/settings/connections")
+    String connections(HttpSession session, Model model) {
+        Long currentUserId = userId(session);
+        model.addAttribute("currentUser", service.requireUser(currentUserId));
+        model.addAttribute("connections", brokerConnections.connectionsFor(currentUserId));
+        return "connections";
+    }
+
     @GetMapping("/recover")
     String recover() { return "recover"; }
 
@@ -167,15 +173,6 @@ public class TwiboController {
             model.addAttribute("error", ex.getMessage());
             return "reset-password";
         }
-    }
-
-    private void signIn(HttpServletRequest request, User user) {
-        if (request.getSession(false) != null) {
-            request.changeSessionId();
-        }
-        HttpSession session = request.getSession(true);
-        session.setAttribute("userId", user.getId());
-        session.setAttribute("username", user.getUsername());
     }
 
     private Long userId(HttpSession session) { return (Long) session.getAttribute("userId"); }

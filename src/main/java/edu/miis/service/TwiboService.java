@@ -38,12 +38,6 @@ public class TwiboService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<User> authenticate(String username, String password) {
-        return users.findByUsernameIgnoreCase(username.trim())
-                .filter(user -> encoder.matches(password, user.getPasswordHash()));
-    }
-
-    @Transactional(readOnly = true)
     public Optional<User> findUser(String username) {
         return users.findByUsernameIgnoreCase(username.trim());
     }

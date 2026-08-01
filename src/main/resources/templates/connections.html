@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Connections · Twibo</title><link rel="stylesheet" th:href="@{/css/app.css}">
+</head><body><nav th:replace="~{fragments :: nav}"></nav><main class="shell">
+  <header class="page-heading"><div><h1>Trading connections</h1>
+    <p class="meta">Broker connections are private and never appear on your social profile.</p></div></header>
+
+  <section class="card">
+    <div class="section-heading"><div><h2>Alpaca</h2><p class="meta">Paper trading will be supported first.</p></div>
+      <span class="status-chip status-offline" th:if="${#lists.isEmpty(connections)}">Not connected</span></div>
+    <div th:each="connection : ${connections}" class="connection-row">
+      <div><strong th:text="|${connection.provider} ${connection.environment}|"></strong>
+        <p class="meta" th:text="${connection.externalAccountLabel ?: 'Account identity withheld'}"></p></div>
+      <span class="status-chip" th:classappend="${connection.connected} ? ' status-ok' : ' status-offline'"
+            th:text="${connection.status}"></span>
+    </div>
+    <p th:if="${#lists.isEmpty(connections)}">The Twibo ownership and privacy model is ready. Alpaca authorization will be enabled when Trading Agent's multi-user API is complete.</p>
+    <button type="button" disabled aria-disabled="true">Connect Alpaca (coming later)</button>
+  </section>
+
+  <section class="card"><h2>Privacy boundary</h2>
+    <p>Twibo stores connection status and safe display metadata only. OAuth tokens, API keys, account numbers, approval phrases, and orders are not accepted by this module.</p>
+  </section>
+</main></body></html>
